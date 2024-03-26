@@ -21,7 +21,7 @@ public class TestConfig {
 
     @Before
     public void init() {
-        javaCGConfigureWrapper.setOtherConfigList(JavaCGOtherConfigFileUseListEnum.OCFULE_JAR_DIR, Collections.singletonList("build/libs/java-callgraph2-0.2.2.jar"));
+        javaCGConfigureWrapper.setOtherConfigList(JavaCGOtherConfigFileUseListEnum.OCFULE_JAR_DIR, Collections.singletonList("D:\\work\\jar\\100011\\dev"));
     }
 
     @Test

@@ -89,7 +89,7 @@ public class JarEntryPreHandle2Parser extends AbstractJarEntryParser {
         }
 
         Map<MethodArgReturnTypes, Integer> methodAttributeMap = new HashMap<>();
-        // 遍历类的方法
+        // 遍历父类的方法
         for (Method method : javaClass.getMethods()) {
             String methodName = method.getName();
             if (JavaCGByteCodeUtil.checkExtendsMethod(methodName, method)) {

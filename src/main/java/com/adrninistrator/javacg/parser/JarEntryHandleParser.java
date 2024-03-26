@@ -154,7 +154,7 @@ public class JarEntryHandleParser extends AbstractJarEntryParser {
         if (JavaCGLogUtil.isDebugPrintFlag()) {
             JavaCGLogUtil.debugPrint("处理Class: " + className);
         }
-
+        // 构建类解析器
         ClassHandler classHandler = new ClassHandler(javaClass, jarEntryName, javaCGConfInfo);
         classHandler.setUseSpringBeanByAnnotationHandler(useSpringBeanByAnnotationHandler);
         classHandler.setRunnableImplClassMap(runnableImplClassMap);

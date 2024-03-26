@@ -24,4 +24,13 @@ public class TestHandleJarUtilDirOne {
                 "E:/desktop/test-dir/out"
         ), jarInfoMap, new HashSet<>()));
     }
+
+    @Test
+    public void test1() {
+        Map<String, JarInfo> jarInfoMap = new HashMap<>();
+
+        System.out.println(JavaCGJarUtil.handleJar(Arrays.asList(
+                "D:\\work\\jar\\d6c\\test"
+        ), jarInfoMap, new HashSet<>()));
+    }
 }

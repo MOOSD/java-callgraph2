@@ -127,7 +127,7 @@ public class ClassHandler {
             }
         }
 
-        // 首先写入当前类的类名
+        // 首先写入当前类的类名，将类名写入类名相关文件中。
         if (!JavaCGUtil.checkSkipClass(className, javaCGConfInfo.getNeedHandlePackageSet())) {
             JavaCGFileUtil.write2FileWithTab(classNameWriter, JavaCGConstants.FLAG_HASHTAG);
             JavaCGFileUtil.write2FileWithTab(classNameWriter, className);
@@ -145,13 +145,16 @@ public class ClassHandler {
         }
     }
 
+    /**
+     * 处理类文件中的内容
+     */
     public boolean handleClass() throws IOException {
-        // 记录类之间引用关系
+        // 记录类之间引用关系，将类信息以及此类依赖的类的信息写入到对应文件中
         recordReferencedClass();
 
         if (!javaClass.isAnnotation()) {
             // 不是注解类型的类
-            // 记录类上的注解信息
+            // 记录类上的注解信息，将注解信息写入文件
             JavaCGAnnotationUtil.writeAnnotationInfo(javaClass.getClassName(),
                     javaClass.getAnnotationEntries(),
                     annotationAttributesFormatter,
@@ -189,7 +192,7 @@ public class ClassHandler {
     }
 
     /**
-     * 处理方法
+     * 处理方法内容
      *
      * @param method
      * @return false: 处理失败 true: 处理成功
@@ -206,7 +209,7 @@ public class ClassHandler {
         String fullMethod = JavaCGMethodUtil.formatFullMethod(className, method.getName(), callerMethodArgs);
         // 返回类型
         String returnType = method.getReturnType().toString();
-        String methodNameAndArgs = method.getName() + callerMethodArgs;
+         String methodNameAndArgs = method.getName() + callerMethodArgs;
         if (!handledMethodNameAndArgs.contains(methodNameAndArgs)) {
             // 记录方法的信息
             JavaCGFileUtil.write2FileWithTab(methodInfoWriter, fullMethod, String.valueOf(method.getAccessFlags()), returnType);

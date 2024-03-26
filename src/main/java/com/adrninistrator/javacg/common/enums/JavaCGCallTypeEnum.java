@@ -39,6 +39,8 @@ public enum JavaCGCallTypeEnum {
     CTE_TX_CALLBACK_WR_INIT_CALL2("_TCWRID2", "TransactionCallbackWithoutResult 构造函数调用 doInTransactionWithoutResult() 方法"),
     CTE_THREAD_START_RUN("_TSR", "Thread start() 方法调用 run() 方法"),
     CTE_SUPER_CALL_CHILD("_SCC", "父类调用子类方法"),
+    CTE_SUPER_CALL_CHILD_OVERRIDE("_SCC_O", "子类重写了父类方法，视作改父类调用子类方法"),
+    CTE_SUPER_CALL_CHILD_INTERFACE_OVERRIDE("_SCC_I_O", "子接口继承了父接口，此时父接口中所有方法都视作调用了子接口方法"),
     CTE_CHILD_CALL_SUPER("_CCS", "子类调用父类方法"),
     CTE_CHILD_CALL_SUPER_SPECIAL("_CCS_SPE", "子类通过super.调用父类方法"),
     CTE_CHILD_CALL_SUPER_INTERFACE("_CCS_I", "子接口调用父接口方法"),

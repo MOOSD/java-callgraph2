@@ -1,6 +1,7 @@
 apply plugin: 'eclipse'
 apply plugin: 'java'
 apply plugin: 'idea'
+apply from: "publish-private.gradle"
 
 group 'com.github.adrninistrator'
 version = "1.0.16"

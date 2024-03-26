@@ -313,7 +313,7 @@ public class JavaCGJarUtil {
         List<File> nonJarFileList = new ArrayList<>();
         // 保存后缀非.jar文件的相对路径列表
         List<String> nonJarFileRelativelyPathList = new ArrayList<>();
-
+        // 排除jacg生成的md文件
         // 查找指定目录中不同后缀的文件
         findFileInSubDir(sourceDirFile, null, nonJarFileList, nonJarFileRelativelyPathList, jarFileInDirList);
         if (nonJarFileList.isEmpty()) {

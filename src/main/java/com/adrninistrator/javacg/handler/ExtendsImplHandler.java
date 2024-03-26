@@ -42,12 +42,14 @@ public class ExtendsImplHandler {
 
     private Map<String, List<String>> childrenClassMap;
 
+    // 接口继承接口的情况的记录
     private Map<String, InterfaceExtendsMethodInfo> interfaceExtendsMethodInfoMap;
-
+    // 接口继承接口的情况的记录
     private Map<String, List<String>> childrenInterfaceMap;
 
+    // 类实现接口的情况的记录。
     private Map<String, ClassImplementsMethodInfo> classImplementsMethodInfoMap;
-
+    // 类继承类的情况的记录
     private Map<String, ClassExtendsMethodInfo> classExtendsMethodInfoMap;
 
     private ClassAndJarNum classAndJarNum;
@@ -64,11 +66,15 @@ public class ExtendsImplHandler {
 
         // 记录接口调用实现类方法
         recordInterfaceCallClassMethod(methodCallWriter);
+
+        // 记录抽象方法调用具体实现方法
+
+        // 记录方法调用其重载方法
     }
 
     // 将父接口中的方法添加到子接口中
     private void addSuperInterfaceMethod4ChildrenInterface(Writer methodCallWriter) throws IOException {
-        // 查找顶层父接口
+        // 查找顶层父接口，这里是顶层父接口的集合
         Set<String> topSuperInterfaceSet = new HashSet<>();
         for (Map.Entry<String, InterfaceExtendsMethodInfo> entry : interfaceExtendsMethodInfoMap.entrySet()) {
             InterfaceExtendsMethodInfo interfaceExtendsMethodInfo = entry.getValue();
@@ -129,6 +135,11 @@ public class ExtendsImplHandler {
             List<MethodArgReturnTypes> childInterfaceMethodAndArgsList = childInterfaceExtendsMethodInfo.getMethodAndArgsList();
             if (childInterfaceMethodAndArgsList.contains(superMethodAndArgs)) {
                 // 子接口中已包含父接口，跳过
+                // 添加父接口调用子接口
+                addExtraMethodCall(methodCallWriter, superInterface, superMethodAndArgs.getMethodName(), superMethodAndArgs.getMethodArgTypes(),
+                        superMethodAndArgs.getMethodReturnType(), JavaCGCallTypeEnum.CTE_SUPER_CALL_CHILD_INTERFACE_OVERRIDE,
+                        childInterface, superMethodAndArgs.getMethodName(), superMethodAndArgs.getMethodArgTypes(), superMethodAndArgs.getMethodReturnType()
+                );
                 continue;
             }
 
@@ -144,6 +155,12 @@ public class ExtendsImplHandler {
                     superMethodAndArgs.getMethodReturnType(), JavaCGCallTypeEnum.CTE_CHILD_CALL_SUPER_INTERFACE, superInterface, superMethodAndArgs.getMethodName(),
                     superMethodAndArgs.getMethodArgTypes(), superMethodAndArgs.getMethodReturnType()
             );
+            // 添加父接口调用子接口
+            addExtraMethodCall(methodCallWriter, superInterface, superMethodAndArgs.getMethodName(), superMethodAndArgs.getMethodArgTypes(),
+                    superMethodAndArgs.getMethodReturnType(), JavaCGCallTypeEnum.CTE_SUPER_CALL_CHILD_INTERFACE_OVERRIDE,
+                    childInterface, superMethodAndArgs.getMethodName(), superMethodAndArgs.getMethodArgTypes(), superMethodAndArgs.getMethodReturnType()
+            );
+
         }
     }
 
@@ -304,13 +321,19 @@ public class ExtendsImplHandler {
                     && JavaCGUtil.checkSamePackage(superClassName, childClassName))
             ) {
                 /*
-                    对于父类中满足以下条件的非抽象方法进行处理：
+                    对于父类中满足以 下条件的非抽象方法进行处理：
                     public
                     或protected
                     或非public非protected非private且父类与子类在同一个包
                  */
                 if (childMethodWithArgsMap.get(superMethodWithArgs) != null) {
                     // 若当前方法已经处理过则跳过
+                    if (!JavaCGByteCodeUtil.isProtectedMethod(superMethodAccessFlags)){
+                        addExtraMethodCall(methodCallWriter, superClassName, superMethodWithArgs.getMethodName(), superMethodWithArgs.getMethodArgTypes(),
+                                superMethodWithArgs.getMethodReturnType(), JavaCGCallTypeEnum.CTE_SUPER_CALL_CHILD_OVERRIDE, childClassName, superMethodWithArgs.getMethodName(),
+                                superMethodWithArgs.getMethodArgTypes(), superMethodWithArgs.getMethodReturnType());
+
+                    }
                     continue;
                 }
 

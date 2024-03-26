@@ -1,0 +1,44 @@
+apply plugin: 'maven-publish'
+
+
+
+def group = 'com.github.adrninistrator'
+def artifact = 'java-callgraph2'
+
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId group
+            artifactId artifact
+            version "1.0.16-private-SNAPSHOT"
+            from components.java
+
+
+            pom {
+                name = "java-callgraph2"
+                description = "Programs for producing static call graphs for Java programs"
+                url = "https://github.com/Adrninistrator/java-callgraph2"
+                developers {
+                    developer {
+                        id = "moosd"
+                        name = "mawenzhe"
+                        email = "mawz@newgrand.cn"
+                    }
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name 'newgrand-snapshots'
+            url 'http://192.168.8.161:8080/repository/maven-snapshots/'
+            credentials {
+                username = "admin"
+                password = "newgrand@123"
+            }
+        }
+
+    }
+}
+

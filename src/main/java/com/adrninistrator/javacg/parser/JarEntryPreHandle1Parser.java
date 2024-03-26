@@ -59,6 +59,7 @@ public class JarEntryPreHandle1Parser extends AbstractJarEntryParser {
         this.extensionsManager = extensionsManager;
     }
 
+    //第一次预处理jar包，主要处理非class，且非路径的文件，找到了对应扩展名的文件才会处理
     @Override
     protected boolean handleEntry(JarInputStream jarInputStream, String jarEntryName) throws IOException {
         // 尝试处理jar包中的class文件

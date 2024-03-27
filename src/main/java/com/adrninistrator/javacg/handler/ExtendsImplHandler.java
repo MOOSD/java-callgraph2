@@ -40,6 +40,7 @@ public class ExtendsImplHandler {
 
     private Map<String, List<MethodArgReturnTypes>> interfaceMethodWithArgsMap;
 
+    // key:父类信息 value：子类信息列表
     private Map<String, List<String>> childrenClassMap;
 
     // 接口继承接口的情况的记录
@@ -50,6 +51,7 @@ public class ExtendsImplHandler {
     // 类实现接口的情况的记录。
     private Map<String, ClassImplementsMethodInfo> classImplementsMethodInfoMap;
     // 类继承类的情况的记录
+    // key：子类信息 valuel:父类信息
     private Map<String, ClassExtendsMethodInfo> classExtendsMethodInfoMap;
 
     private ClassAndJarNum classAndJarNum;
@@ -213,11 +215,13 @@ public class ExtendsImplHandler {
             String className = classExtendsMethodInfoEntry.getKey();
             ClassExtendsMethodInfo classExtendsMethodInfo = classExtendsMethodInfoEntry.getValue();
             String superClassName = classExtendsMethodInfo.getSuperClassName();
-            if (JavaCGUtil.isClassInJdk(superClassName)) {
+
+            // 要么是真正的顶层父类、要么是仅项目范围内的顶层父类(这个顶层类的父类不存在于项目中。同时这个类必须是项目中的类，且其需要有子类)
+            if (JavaCGUtil.isClassInJdk(superClassName) || (!classExtendsMethodInfoMap.containsKey(superClassName) && childrenClassMap.containsKey(className))) {
                 topSuperClassNameSet.add(className);
             }
         }
-
+        System.out.println("顶层父类数量：" + topSuperClassNameSet.size());
         List<String> topSuperClassNameList = new ArrayList<>(topSuperClassNameSet);
         // 对顶层父类类名排序
         Collections.sort(topSuperClassNameList);

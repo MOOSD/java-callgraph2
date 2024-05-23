@@ -23,6 +23,8 @@ public enum JavaCGOutPutFileTypeEnum {
     OPFTE_METHOD_LINE_NUMBER("method_line_number", "方法代码行号"),
     OPFTE_METHOD_RETURN_GENERICS_TYPE("method_return_generics_type", "方法返回泛型类型"),
     OPFTE_SPRING_BEAN("spring_bean", "Spring Bean信息"),
+    OPFTE_BEAN_FIELD_INFO("bean_field_info", "java bean的属性信息"),
+    OPFTE_BEAN_FIELD_ANNOTATION("bean_field_annotation", "java bean属性的注解信息"),
     OPFTE_LOG_METHOD_SPEND_TIME("_log_method_spend_time", "日志-方法处理耗时"),
     OPFTE_ILLEGAL("illegal", "非法值"),
     ;

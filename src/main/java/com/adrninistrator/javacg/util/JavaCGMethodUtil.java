@@ -46,6 +46,10 @@ public class JavaCGMethodUtil {
         return className + JavaCGConstants.FLAG_COLON + methodName + arguments;
     }
 
+    public static String formatFullField(String className, String fieldName){
+        return className + JavaCGConstants.FLAG_HASHTAG + fieldName;
+    }
+
     /**
      * 生成格式化后的完整方法
      *

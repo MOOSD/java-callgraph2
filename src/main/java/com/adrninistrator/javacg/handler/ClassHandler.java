@@ -1,5 +1,6 @@
 package com.adrninistrator.javacg.handler;
 
+import com.adrninistrator.javacg.common.BeanConstants;
 import com.adrninistrator.javacg.common.JavaCGCommonNameConstants;
 import com.adrninistrator.javacg.common.JavaCGConstants;
 import com.adrninistrator.javacg.conf.JavaCGConfInfo;
@@ -18,23 +19,16 @@ import com.adrninistrator.javacg.writer.WriterSupportSkip;
 import copy.javassist.bytecode.BadBytecode;
 import copy.javassist.bytecode.SignatureAttribute;
 import org.apache.bcel.Const;
-import org.apache.bcel.classfile.ClassFormatException;
-import org.apache.bcel.classfile.Constant;
-import org.apache.bcel.classfile.ConstantPool;
-import org.apache.bcel.classfile.JavaClass;
-import org.apache.bcel.classfile.Method;
+import org.apache.bcel.classfile.*;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.MethodGen;
+import org.apache.bcel.generic.Type;
 import org.apache.commons.lang3.ArrayUtils;
 
+import java.beans.Introspector;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author adrninistrator
@@ -70,6 +64,8 @@ public class ClassHandler {
     private Writer lambdaMethodInfoWriter;
     private Writer classAnnotationWriter;
     private Writer methodAnnotationWriter;
+    private Writer beanFieldAnnotationWriter;
+    private Writer beanFieldInfoWriter;
     private Writer methodLineNumberWriter;
     private Writer methodCallInfoWriter;
     private Writer methodInfoWriter;
@@ -177,6 +173,12 @@ public class ClassHandler {
             }
         }
 
+        // 处理成员属性
+        if(!handleField(javaClass.getFields(), javaClass.getMethods())){
+            return false;
+        }
+
+
         return true;
     }
 
@@ -282,6 +284,95 @@ public class ClassHandler {
 
         return success;
     }
+
+    private boolean handleField(Field[] fields, Method[] methods) throws IOException {
+        // 类中无属性的跳过
+        if (ArrayUtils.isEmpty(fields)){
+            return true;
+        }
+        HashSet<String> setterMethodFieldSet = new HashSet<>();
+        HashSet<String> getterMethodFieldSet = new HashSet<>();
+        for (Method method : methods) {
+            String methodName = method.getName();
+            // 过滤非公开，且方法名称长度小于4的
+            if (!JavaCGByteCodeUtil.isPublicFlag(method.getAccessFlags()) || methodName.length() < 4) {
+                continue;
+            }
+            // 判断是否getter
+            if (methodName.startsWith(BeanConstants.GETTER_PREFIX)){
+                String substring = methodName.substring(BeanConstants.GETTER_PREFIX.length());
+                String getterFieldName = Introspector.decapitalize(substring);
+                //获取对应的属性名
+                getterMethodFieldSet.add(getterFieldName);
+            }else if(methodName.startsWith(BeanConstants.GETTER_PREFIX_IS)){
+                String substring = methodName.substring(BeanConstants.GETTER_PREFIX_IS.length());
+                String getterFieldName = Introspector.decapitalize(substring);
+                getterMethodFieldSet.add(getterFieldName);
+
+            }else if(methodName.startsWith(BeanConstants.SETTER_PREFIX)){
+                // 判断是否setter
+                String substring = methodName.substring(BeanConstants.SETTER_PREFIX.length());
+                String getterFieldName = Introspector.decapitalize(substring);
+                setterMethodFieldSet.add(getterFieldName);
+
+            }
+
+        }
+        // 无Getter和Setter的跳过 todo 一个bean，没有getter和setter
+        if (setterMethodFieldSet.isEmpty() || getterMethodFieldSet.isEmpty()){
+            return true;
+        }
+        String className = javaClass.getClassName();
+
+        // 遍历方法中所有的属性
+        for (Field field : fields) {
+            int accessFlags = field.getAccessFlags();
+            String fieldName = field.getName();
+            String fullFieldName = JavaCGMethodUtil.formatFullField(className,fieldName);
+            // 计算field的完全限定名
+
+            // 处理注解上的注释
+            JavaCGAnnotationUtil.writeAnnotationInfo(fullFieldName, field.getAnnotationEntries(),
+                    annotationAttributesFormatter, beanFieldAnnotationWriter);
+
+            Type type = field.getType();
+            boolean hasGetter = getterMethodFieldSet.contains(fieldName);
+            boolean hasSetter = setterMethodFieldSet.contains(fieldName);
+            // 将当前属性移出
+            setterMethodFieldSet.remove(fieldName);
+            getterMethodFieldSet.remove(fieldName);
+            // 记录bean的field信息
+            JavaCGFileUtil.write2FileWithTab(beanFieldInfoWriter, String.valueOf(accessFlags) ,fullFieldName, fieldName,
+                    type.toString(), String.valueOf(hasGetter), String.valueOf(hasSetter));
+        }
+        // todo 进阶的解析方式，应当将getter也解析为属性
+//        // 如果有额外的getter和setter则单独记录
+//        for (String fieldName : getterMethodFieldSet) {
+//            boolean hasSetter = setterMethodFieldSet.contains(fieldName);
+//            String fullFieldName = JavaCGMethodUtil.formatFullField(className,fieldName);
+//
+//            JavaCGFileUtil.write2FileWithTab(beanFieldInfoWriter, "", fullFieldName, fieldName,
+//                    type.toString(), "true", String.valueOf(hasSetter));
+//        }
+
+        return true;
+
+
+    }
+
+    /**
+     * 根据Bean规范
+     * @param fileName
+     * @return
+     */
+    private boolean hasGetter(String fileName, HashSet<String> setterMethodSet){
+        return false;
+    }
+
+    private boolean hasSetter(String fileName, HashSet<String> setterMethodSet){
+        return false;
+    }
+
 
     // 记录方法返回泛型类型
     private void recordMethodReturnGenericsType(String fullMethod, SignatureAttribute.MethodSignature methodSignature) {
@@ -471,5 +562,21 @@ public class ClassHandler {
 
     public void setClassAndJarNum(ClassAndJarNum classAndJarNum) {
         this.classAndJarNum = classAndJarNum;
+    }
+
+    public Writer getBeanFieldAnnotationWriter() {
+        return beanFieldAnnotationWriter;
+    }
+
+    public void setBeanFieldAnnotationWriter(Writer beanFieldAnnotationWriter) {
+        this.beanFieldAnnotationWriter = beanFieldAnnotationWriter;
+    }
+
+    public Writer getBeanFieldInfoWriter() {
+        return beanFieldInfoWriter;
+    }
+
+    public void setBeanFieldInfoWriter(Writer beanFieldInfoWriter) {
+        this.beanFieldInfoWriter = beanFieldInfoWriter;
     }
 }

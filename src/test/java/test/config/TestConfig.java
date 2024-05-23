@@ -21,7 +21,7 @@ public class TestConfig {
 
     @Before
     public void init() {
-        javaCGConfigureWrapper.setOtherConfigList(JavaCGOtherConfigFileUseListEnum.OCFULE_JAR_DIR, Collections.singletonList("D:\\work\\jar\\100011\\dev"));
+        javaCGConfigureWrapper.setOtherConfigList(JavaCGOtherConfigFileUseListEnum.OCFULE_JAR_DIR, Collections.singletonList("D:\\Data\\IdeaProject\\newgrand\\precision\\precision-static\\target\\precision-static-1.0.0.jar"));
     }
 
     @Test

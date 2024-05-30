@@ -64,6 +64,8 @@ public class JarEntryHandleParser extends AbstractJarEntryParser {
     private Writer beanFieldAnnotationWriter;
     private Writer beanFieldInfoWriter;
 
+    private Writer methodArgAnnotationWriter;
+
     private WriterSupportSkip logMethodSpendTimeWriter;
 
     // 扩展类管理类
@@ -182,6 +184,7 @@ public class JarEntryHandleParser extends AbstractJarEntryParser {
         classHandler.setClassAndJarNum(classAndJarNum);
         classHandler.setBeanFieldAnnotationWriter(beanFieldAnnotationWriter);
         classHandler.setBeanFieldInfoWriter(beanFieldInfoWriter);
+        classHandler.setMethodArgAnnotationWriter(methodArgAnnotationWriter);
 
         classNumCounter.addAndGet();
         if (!classHandler.handleClass()) {
@@ -422,5 +425,13 @@ public class JarEntryHandleParser extends AbstractJarEntryParser {
 
     public void setBeanFieldInfoWriter(Writer beanFieldInfoWriter) {
         this.beanFieldInfoWriter = beanFieldInfoWriter;
+    }
+
+    public Writer getMethodArgAnnotationWriter() {
+        return methodArgAnnotationWriter;
+    }
+
+    public void setMethodArgAnnotationWriter(Writer methodArgAnnotationWriter) {
+        this.methodArgAnnotationWriter = methodArgAnnotationWriter;
     }
 }

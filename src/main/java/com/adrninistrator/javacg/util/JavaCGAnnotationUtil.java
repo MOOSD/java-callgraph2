@@ -114,6 +114,35 @@ public class JavaCGAnnotationUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }/**
+     * 将注解信息写入文件，并且带有额外信息
+     */
+    public static void writeArgAnnotationInfo(String classOrMethod, String messages,
+                                           AnnotationEntry[] annotationEntries,
+                                           AnnotationAttributesFormatterInterface annotationAttributesFormatter,
+                                           Writer writer) {
+        if (annotationEntries == null || annotationEntries.length == 0) {
+            return;
+        }
+
+        try {
+            for (AnnotationEntry annotationEntry : annotationEntries) {
+                String annotationClassName = Utility.typeSignatureToString(annotationEntry.getAnnotationType(), false);
+                if (annotationEntry.getElementValuePairs() == null || annotationEntry.getElementValuePairs().length == 0) {
+                    // 注解属性为空
+                    JavaCGFileUtil.write2FileWithTab(writer, classOrMethod, messages, annotationClassName);
+                    continue;
+                }
+
+                // 注解属性非空
+                for (ElementValuePair elementValuePair : annotationEntry.getElementValuePairs()) {
+                    String formattedValue = annotationAttributesFormatter.format(elementValuePair);
+                    JavaCGFileUtil.write2FileWithTab(writer, classOrMethod, messages, annotationClassName, elementValuePair.getNameString(), formattedValue);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private JavaCGAnnotationUtil() {

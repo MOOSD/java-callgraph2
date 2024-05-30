@@ -65,6 +65,7 @@ public class ClassHandler {
     private Writer classAnnotationWriter;
     private Writer methodAnnotationWriter;
     private Writer beanFieldAnnotationWriter;
+    private Writer methodArgAnnotationWriter;
     private Writer beanFieldInfoWriter;
     private Writer methodLineNumberWriter;
     private Writer methodCallInfoWriter;
@@ -215,6 +216,9 @@ public class ClassHandler {
         if (!handledMethodNameAndArgs.contains(methodNameAndArgs)) {
             // 记录方法的信息
             JavaCGFileUtil.write2FileWithTab(methodInfoWriter, fullMethod, String.valueOf(method.getAccessFlags()), returnType);
+
+            // 处理方法参数注解
+            recordMethodArgsAnnotationInfo(method.getParameterAnnotationEntries(),fullMethod);
         } else {
             existsSameMethodNameAndArgs = true;
             if (!JavaCGByteCodeUtil.isBridgeFlag(method.getAccessFlags())) {
@@ -283,6 +287,17 @@ public class ClassHandler {
         }
 
         return success;
+    }
+
+    private void recordMethodArgsAnnotationInfo(ParameterAnnotationEntry[] parameterAnnotationEntries, String fullMethod) {
+        if (ArrayUtils.isEmpty(parameterAnnotationEntries)){
+            return;
+        }
+        for (int i = 0, parameterAnnotationEntriesLength = parameterAnnotationEntries.length; i < parameterAnnotationEntriesLength; i++) {
+            JavaCGAnnotationUtil.writeArgAnnotationInfo(fullMethod, String.valueOf(i), parameterAnnotationEntries[i].getAnnotationEntries(),
+                    annotationAttributesFormatter, methodArgAnnotationWriter);
+        }
+
     }
 
     private boolean handleField(Field[] fields, Method[] methods) throws IOException {
@@ -578,5 +593,13 @@ public class ClassHandler {
 
     public void setBeanFieldInfoWriter(Writer beanFieldInfoWriter) {
         this.beanFieldInfoWriter = beanFieldInfoWriter;
+    }
+
+    public Writer getMethodArgAnnotationWriter() {
+        return methodArgAnnotationWriter;
+    }
+
+    public void setMethodArgAnnotationWriter(Writer methodArgAnnotationWriter) {
+        this.methodArgAnnotationWriter = methodArgAnnotationWriter;
     }
 }

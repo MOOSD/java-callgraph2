@@ -2,8 +2,11 @@ package com.adrninistrator.javacg.util;
 
 import com.adrninistrator.javacg.common.JavaCGConstants;
 import com.adrninistrator.javacg.dto.method.JavaCGMethodInfo;
+import org.apache.bcel.classfile.*;
 import org.apache.bcel.generic.Type;
 import org.apache.commons.lang3.ArrayUtils;
+
+import java.util.Objects;
 
 /**
  * @author adrninistrator
@@ -147,5 +150,28 @@ public class JavaCGMethodUtil {
 
     private JavaCGMethodUtil() {
         throw new IllegalStateException("illegal");
+    }
+
+    public static String getFullArgListStr(Type[] arguments, Attribute[] methodAttribute, ConstantPool constantPool) {
+        MethodParameter[] methodParameters = null;
+        // 查询字节码信息中的方法参数信息
+        for (Attribute attribute : methodAttribute) {
+            if (attribute instanceof MethodParameters){
+                methodParameters = ((MethodParameters) attribute).getParameters();
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < arguments.length; i++) {
+            if (i != 0) {
+                sb.append(JavaCGConstants.FLAG_COMMA);
+            }
+            sb.append(arguments[i].toString()).append(" ");
+            if (Objects.nonNull(methodParameters)){
+                sb.append(methodParameters[i].getParameterName(constantPool));
+            }
+        }
+
+        return sb.toString();
+
     }
 }

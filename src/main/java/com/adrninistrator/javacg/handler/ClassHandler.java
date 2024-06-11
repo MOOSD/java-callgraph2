@@ -215,7 +215,8 @@ public class ClassHandler {
          String methodNameAndArgs = method.getName() + callerMethodArgs;
         if (!handledMethodNameAndArgs.contains(methodNameAndArgs)) {
             // 记录方法的信息
-            JavaCGFileUtil.write2FileWithTab(methodInfoWriter, fullMethod, String.valueOf(method.getAccessFlags()), returnType);
+            String callerFullMethodArgs = JavaCGMethodUtil.getFullArgListStr(method.getArgumentTypes(),method.getAttributes(),method.getConstantPool());
+            JavaCGFileUtil.write2FileWithTab(methodInfoWriter, fullMethod, callerFullMethodArgs, String.valueOf(method.getAccessFlags()), returnType);
 
             // 处理方法参数注解
             recordMethodArgsAnnotationInfo(method.getParameterAnnotationEntries(),fullMethod);

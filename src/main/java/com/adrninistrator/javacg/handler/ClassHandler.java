@@ -24,10 +24,13 @@ import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.Type;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.beans.Introspector;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -399,21 +402,21 @@ public class ClassHandler {
             }
 
             SignatureAttribute.ClassType classType = (SignatureAttribute.ClassType) returnType;
-            List<String> methodReturnGenericsTypeList = new ArrayList<>();
+            List<Pair<String,String>> methodReturnGenericsTypeList = new ArrayList<>();
             // 解析方法返回中泛型类型，外层处理
-            parseMethodArgsGenericsType(classType, true, methodReturnGenericsTypeList);
+            parseMethodArgsGenericsType(classType, true,"1" , methodReturnGenericsTypeList);
             if (methodReturnGenericsTypeList.isEmpty()) {
                 // 未获取到方法返回中泛型类型
                 return;
             }
 
             // 记录返回类型
-            JavaCGFileUtil.write2FileWithTab(methodReturnGenericsTypeWriter, fullMethod, JavaCGConstants.FILE_KEY_METHOD_ARGS_RETURN_TYPE, String.valueOf(0), classType.getName());
+            JavaCGFileUtil.write2FileWithTab(methodReturnGenericsTypeWriter, fullMethod, JavaCGConstants.FILE_KEY_METHOD_ARGS_RETURN_TYPE, String.valueOf(0), classType.getName(),"1");
 
             // 获取到方法返回中泛型类型，记录
             for (int i = 0; i < methodReturnGenericsTypeList.size(); i++) {
                 JavaCGFileUtil.write2FileWithTab(methodReturnGenericsTypeWriter, fullMethod, JavaCGConstants.FILE_KEY_METHOD_ARGS_RETURN_GENERICS_TYPE, String.valueOf(i),
-                        methodReturnGenericsTypeList.get(i));
+                        methodReturnGenericsTypeList.get(i).getLeft(),methodReturnGenericsTypeList.get(i).getRight());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -433,9 +436,9 @@ public class ClassHandler {
             }
 
             SignatureAttribute.ClassType classType = (SignatureAttribute.ClassType) argType;
-            List<String> methodArgsGenericsTypeList = new ArrayList<>();
+            List<Pair<String,String>> methodArgsGenericsTypeList = new ArrayList<>();
             // 解析方法参数中泛型类型，外层处理
-            parseMethodArgsGenericsType(classType, true, methodArgsGenericsTypeList);
+            parseMethodArgsGenericsType(classType, true, "1",methodArgsGenericsTypeList);
             if (methodArgsGenericsTypeList.isEmpty()) {
                 // 未获取到方法参数中泛型类型
                 continue;
@@ -443,12 +446,12 @@ public class ClassHandler {
 
             // 记录参数类型
             JavaCGFileUtil.write2FileWithTab(methodArgGenericsTypeWriter, fullMethod, String.valueOf(i), JavaCGConstants.FILE_KEY_METHOD_ARGS_RETURN_TYPE, String.valueOf(0),
-                    classType.getName());
+                    classType.getName(), "1");
 
             // 获取到方法参数中泛型类型，记录
             for (int j = 0; j < methodArgsGenericsTypeList.size(); j++) {
                 JavaCGFileUtil.write2FileWithTab(methodArgGenericsTypeWriter, fullMethod, String.valueOf(i), JavaCGConstants.FILE_KEY_METHOD_ARGS_RETURN_GENERICS_TYPE,
-                        String.valueOf(j), methodArgsGenericsTypeList.get(j));
+                        String.valueOf(j), methodArgsGenericsTypeList.get(j).getLeft(), methodArgsGenericsTypeList.get(j).getRight());
             }
         }
     }
@@ -460,14 +463,15 @@ public class ClassHandler {
      * @param outer                      是否为外层的数据
      * @param methodArgsGenericsTypeList
      */
-    private void parseMethodArgsGenericsType(SignatureAttribute.Type type, boolean outer, List<String> methodArgsGenericsTypeList) {
+    private void parseMethodArgsGenericsType(SignatureAttribute.Type type, boolean outer,String path, List<Pair<String,String>> methodArgsGenericsTypeList) {
         if (!(type instanceof SignatureAttribute.ClassType)) {
             return;
         }
 
         SignatureAttribute.ClassType classType = (SignatureAttribute.ClassType) type;
-        // 获取参数类型
+        // 获取泛型参数类型
         SignatureAttribute.TypeArgument[] typeArguments = classType.getTypeArguments();
+        // 最外层的数据不记录
         if (ArrayUtils.isEmpty(typeArguments)) {
             if (outer) {
                 // 外层的数据，没有泛型类型，不需要记录，返回
@@ -475,18 +479,21 @@ public class ClassHandler {
             }
 
             // 当前参数类型下不再有类型
-            methodArgsGenericsTypeList.add(classType.getName());
+            methodArgsGenericsTypeList.add(new ImmutablePair<>(classType.getName(),path));
             return;
         }
 
         if (!outer) {
             // 内层的数据，当前参数类型下还有类型，记录当前参数的类型，如List、Map
-            methodArgsGenericsTypeList.add(classType.getName());
+            methodArgsGenericsTypeList.add(new ImmutablePair<>(classType.getName(),path));
         }
+        int subPath = 1;
         // 遍历参数类型
         for (SignatureAttribute.TypeArgument typeArgument : typeArguments) {
             // 递归处理，泛型类型需要记录
-            parseMethodArgsGenericsType(typeArgument.getType(), false, methodArgsGenericsTypeList);
+            // 以泛型参数的类型再次执行
+            parseMethodArgsGenericsType(typeArgument.getType(), false, String.join("_",path,String.valueOf(subPath)), methodArgsGenericsTypeList);
+            subPath++;
         }
     }
 

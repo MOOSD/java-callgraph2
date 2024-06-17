@@ -142,6 +142,7 @@ public class JCallGraph {
              Writer innerClassWriter = JavaCGFileUtil.genBufferedWriter(javaCGOutputInfo.getMainFilePath(JavaCGOutPutFileTypeEnum.OPFTE_INNER_CLASS));
              Writer beanFieldInfoWriter = JavaCGFileUtil.genBufferedWriter(javaCGOutputInfo.getMainFilePath(JavaCGOutPutFileTypeEnum.OPFTE_BEAN_FIELD_INFO));
              Writer beanFieldAnnotationWriter = JavaCGFileUtil.genBufferedWriter(javaCGOutputInfo.getMainFilePath(JavaCGOutPutFileTypeEnum.OPFTE_BEAN_FIELD_ANNOTATION));
+             Writer beanFieldArgAnnotationWriter = JavaCGFileUtil.genBufferedWriter(javaCGOutputInfo.getMainFilePath(JavaCGOutPutFileTypeEnum.OPFTE_BEAN_FIELD_GENERICS_TYPE));
              Writer methodArgAnnotationWriter = JavaCGFileUtil.genBufferedWriter(javaCGOutputInfo.getMainFilePath(JavaCGOutPutFileTypeEnum.OPFTE_METHOD_ARG_ANNOTATION));
              WriterSupportSkip logMethodSpendTimeWriter = new WriterSupportSkip(javaCGOutputInfo.getMainFilePath(JavaCGOutPutFileTypeEnum.OPFTE_LOG_METHOD_SPEND_TIME))
         ) {
@@ -164,6 +165,7 @@ public class JCallGraph {
             jarEntryHandleParser.setBeanFieldInfoWriter(beanFieldInfoWriter);
             jarEntryHandleParser.setBeanFieldAnnotationWriter(beanFieldAnnotationWriter);
             jarEntryHandleParser.setMethodArgAnnotationWriter(methodArgAnnotationWriter);
+            jarEntryHandleParser.setBeanFieldGenericsTypeWriter(beanFieldArgAnnotationWriter);
 
             // 处理jar包
             if (!handleJar(newJarFilePath, methodCallWriter, springBeanWriter)) {

@@ -30,7 +30,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.beans.Introspector;
 import java.io.IOException;
 import java.io.Writer;
-import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -70,6 +69,7 @@ public class ClassHandler {
     private Writer beanFieldAnnotationWriter;
     private Writer methodArgAnnotationWriter;
     private Writer beanFieldInfoWriter;
+    private Writer beanFieldGenericsTypeWriter;
     private Writer methodLineNumberWriter;
     private Writer methodCallInfoWriter;
     private Writer methodInfoWriter;
@@ -363,6 +363,9 @@ public class ClassHandler {
             // 记录bean的field信息
             JavaCGFileUtil.write2FileWithTab(beanFieldInfoWriter, String.valueOf(accessFlags) ,fullFieldName, fieldName,
                     type.toString(), String.valueOf(hasGetter), String.valueOf(hasSetter));
+            // 记录属性的泛型信息
+            recordFieldGenericsType(fullFieldName, field.getGenericSignature());
+
         }
         // todo 进阶的解析方式，应当将getter也解析为属性
 //        // 如果有额外的getter和setter则单独记录
@@ -391,7 +394,37 @@ public class ClassHandler {
     private boolean hasSetter(String fileName, HashSet<String> setterMethodSet){
         return false;
     }
+    // 记录属性泛型类型
+    private void recordFieldGenericsType(String fullFieldName, String getGenericSignature){
+        if (Objects.isNull(getGenericSignature)){
+            return;
+        }
+        try {
+            SignatureAttribute.ObjectType fieldType = SignatureAttribute.toFieldSignature(getGenericSignature);
+            List<Pair<String,String>> fieldGenericsTypeList = new ArrayList<>();
+            if (!(fieldType instanceof SignatureAttribute.ClassType)) {
+                return;
+            }
 
+            SignatureAttribute.ClassType classFieldType = (SignatureAttribute.ClassType) fieldType;
+            parseMethodArgsGenericsType(classFieldType, true,"1" , fieldGenericsTypeList);
+            if (fieldGenericsTypeList.isEmpty()) {
+                // 未获取到方法返回中泛型类型
+                return;
+            }
+            // 记录返回类型
+            JavaCGFileUtil.write2FileWithTab(beanFieldGenericsTypeWriter, fullFieldName, JavaCGConstants.FILE_KEY_METHOD_ARGS_RETURN_TYPE, classFieldType.getName(), "1");
+
+            // 获取到方法返回中泛型类型，记录
+            for (int i = 0; i < fieldGenericsTypeList.size(); i++) {
+                JavaCGFileUtil.write2FileWithTab(beanFieldGenericsTypeWriter, fullFieldName, JavaCGConstants.FILE_KEY_METHOD_ARGS_RETURN_GENERICS_TYPE,
+                        fieldGenericsTypeList.get(i).getLeft(), fieldGenericsTypeList.get(i).getRight());
+            }
+        } catch (BadBytecode | IOException e) {
+            e.printStackTrace();
+        }
+
+    }
 
     // 记录方法返回泛型类型
     private void recordMethodReturnGenericsType(String fullMethod, SignatureAttribute.MethodSignature methodSignature) {
@@ -609,5 +642,13 @@ public class ClassHandler {
 
     public void setMethodArgAnnotationWriter(Writer methodArgAnnotationWriter) {
         this.methodArgAnnotationWriter = methodArgAnnotationWriter;
+    }
+
+    public Writer getBeanFieldGenericsTypeWriter() {
+        return beanFieldGenericsTypeWriter;
+    }
+
+    public void setBeanFieldGenericsTypeWriter(Writer beanFieldGenericsTypeWriter) {
+        this.beanFieldGenericsTypeWriter = beanFieldGenericsTypeWriter;
     }
 }

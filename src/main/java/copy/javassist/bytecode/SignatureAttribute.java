@@ -782,6 +782,15 @@ public class SignatureAttribute {
         }
     }
 
+    public static ObjectType toFieldSignature(String sig) throws BadBytecode {
+        try {
+            return parseObjectType(sig, new Cursor(), false);
+        }
+        catch (IndexOutOfBoundsException e) {
+            throw error(sig);
+        }
+    }
+
     private static ClassSignature parseSig(String sig)
             throws BadBytecode, IndexOutOfBoundsException
     {
